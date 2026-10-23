@@ -1,6 +1,6 @@
 /* App logic: state, theme, tabs, notes, flashcards, quiz. */
 /* ================= STATE ================= */
-const KEY = "globalization-review-v1";
+const KEY = "cad-review-v1";
 function load(){ try{ const r=localStorage.getItem(KEY); return r?JSON.parse(r):{}; }catch(e){ return {}; } }
 let store = Object.assign({known:{}, best:{}, theme:null}, load());
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(store)); }catch(e){} }
@@ -92,8 +92,8 @@ function homeHTML(){
   const bests = Object.values(store.best);
   const bestAll = store.best.all;
   return `
-    <h1>Review Chapters 1 to 3</h1>
-    <p class="lede">Pick a chapter to open its notes, or use the buttons below to work through all three.</p>
+    <h1>Technical Drafting &amp; AutoCAD Reviewer</h1>
+    <p class="lede">Choose a chapter to review the notes, flashcards, and quiz for these three CAD lessons.</p>
     <div class="gallery">${tiles}</div>
     <div class="quick">
       <button class="btn" data-go="notes">Read all notes</button>
@@ -327,3 +327,4 @@ $("#view").addEventListener("click", e=>{
 /* ================= INIT ================= */
 applyTheme(); drawTabs(); render();
 if(window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", applyTheme);
+
