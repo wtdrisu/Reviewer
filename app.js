@@ -1,9 +1,16 @@
 /* App logic: state, theme, tabs, notes, flashcards, quiz. */
 /* ================= STATE ================= */
-const KEY = "cad-review-v1";
-function load(){ try{ const r=localStorage.getItem(KEY); return r?JSON.parse(r):{}; }catch(e){ return {}; } }
+activateSubject(localStorage.getItem("review-subject") || "cad");
+function storageKey(){ return subjectId==="cad" ? "cad-review-v1" : "globalization-subject-v1"; }
+function load(){ try{ const r=localStorage.getItem(storageKey()); return r?JSON.parse(r):{}; }catch(e){ return {}; } }
 let store = Object.assign({known:{}, best:{}, theme:null}, load());
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(store)); }catch(e){} }
+function save(){ try{ localStorage.setItem(storageKey(), JSON.stringify(store)); }catch(e){} }
+function updateSubjectHeader(){
+  const meta=SUBJECTS[subjectId];
+  document.title=meta.title+" Reviewer";
+  $("#brandTitle").textContent=meta.title;
+  $("#brandSubtitle").textContent=meta.subtitle;
+}
 
 let tab = "home", scope = "all";
 let deck = {ids:[], i:0, shuffle:false, hide:false};
@@ -23,11 +30,23 @@ function effectiveTheme(){
 }
 function applyTheme(){
   if(store.theme) document.documentElement.setAttribute("data-theme", store.theme);
+  else document.documentElement.removeAttribute("data-theme");
   $("#themeLbl").textContent = effectiveTheme()==="dark" ? "Light mode" : "Dark mode";
 }
 $("#themeBtn").addEventListener("click", ()=>{
   store.theme = effectiveTheme()==="dark" ? "light" : "dark";
   save(); applyTheme();
+});
+$("#subjectSelect").value=subjectId;
+updateSubjectHeader();
+$("#subjectSelect").addEventListener("change", e=>{
+  save();
+  activateSubject(e.target.value);
+  localStorage.setItem("review-subject",subjectId);
+  store=Object.assign({known:{},best:{},theme:null},load());
+  scope="all"; deck={ids:[],i:0,shuffle:false,hide:false};
+  qz={phase:"setup",count:10,list:[],i:0,chosen:null,score:0,missedIdx:[]};
+  updateSubjectHeader(); applyTheme(); render();
 });
 
 /* ================= TABS ================= */
@@ -64,7 +83,7 @@ function render(){
   if(row && on) row.scrollLeft = Math.max(0, on.offsetLeft - 18);
 }
 function scopeHTML(){
-  const chips = [["all","All chapters"],[1,"Chapter 1"],[2,"Chapter 2"],[3,"Chapter 3"]];
+  const chips = [["all","All chapters"], ...Object.keys(CH).map(n=>[Number(n),"Chapter "+n])];
   return `<div class="scope" role="group" aria-label="Chapter filter">${chips.map(([k,l])=>
     `<button class="chip" data-scope="${k}" style="${cc(k)}" aria-pressed="${scope===k}"><i></i>${l}</button>`).join("")}</div>`;
 }
@@ -81,7 +100,7 @@ function chapterStats(n){
   return {known, total:ids.length, best: store.best[n]};
 }
 function homeHTML(){
-  const tiles = [1,2,3].map(n=>{
+  const tiles = Object.keys(CH).map(Number).map(n=>{
     const s = chapterStats(n);
     return `<button class="canvas" data-open="${n}" style="${cc(n)}" aria-label="Chapter ${n}: ${CH[n].name}. Open notes.">
       <span class="frame"><span class="field" style="${COMP[n]}"><i class="b1"></i><i class="b2"></i></span></span>
@@ -92,8 +111,8 @@ function homeHTML(){
   const bests = Object.values(store.best);
   const bestAll = store.best.all;
   return `
-    <h1>Technical Drafting &amp; AutoCAD Reviewer</h1>
-    <p class="lede">Choose a chapter to review the notes, flashcards, and quiz for these three CAD lessons.</p>
+    <h1>${SUBJECTS[subjectId].title} Reviewer</h1>
+    <p class="lede">Choose a chapter to review notes, flashcards, and quiz questions for this subject.</p>
     <div class="gallery">${tiles}</div>
     <div class="quick">
       <button class="btn" data-go="notes">Read all notes</button>
@@ -121,7 +140,7 @@ function entriesHTML(es){
     e.parts.map(([l,t])=>`<div class="part">${(e.parts.length>1 && l)?`<span class="plabel">${l}</span>`:""}<span>${t}</span></div>`).join("")}</div></div>`).join("")}</div>`;
 }
 function notesHTML(){
-  const chs = [1,2,3].filter(n=>scope==="all"||scope===n);
+  const chs = Object.keys(CH).map(Number).filter(n=>scope==="all"||scope===n);
   const open = scope==="all" ? "" : "open";
   const body = chs.map(n=>`
     <section class="chapter" style="${cc(n)}">

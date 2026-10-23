@@ -12,8 +12,15 @@
 <body>
 <div class="wrap">
   <div class="top">
-    <div class="brand">Technical Drafting &amp; AutoCAD<small>Reviewer: Computer Basics, CAD Environment, Selection &amp; Keys</small></div>
-    <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch color theme"><span id="themeLbl">Dark</span></button>
+    <div class="brand"><span id="brandTitle">Technical Drafting &amp; AutoCAD</span><small id="brandSubtitle">Computer Basics, CAD Environment, Selection &amp; Keys</small></div>
+    <div class="top-actions">
+      <label class="sr" for="subjectSelect">Choose subject</label>
+      <select id="subjectSelect" class="subject-select" aria-label="Choose subject">
+        <option value="cad">Technical Drafting &amp; AutoCAD</option>
+        <option value="globalization">The Contemporary World: Globalization</option>
+      </select>
+      <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch color theme"><span id="themeLbl">Dark</span></button>
+    </div>
   </div>
 </div>
 <div class="tabwrap">
